@@ -1,0 +1,516 @@
+customer_id,customer_name,customer_segment,region
+CUST-00380,Ingeborg Whitlock,Corporate,Central
+CUST-00115,Colin Costa,Consumer,Central
+CUST-00328,Pavel Ashworth,Small Business,East
+CUST-00267,Alma Rossi,Small Business,East
+CUST-00383,Zoya Ashworth,Corporate,Central
+CUST-00042,Kian Marchetti,Enterprise,West
+CUST-00023,Livia Sorensen,Consumer,East
+CUST-00419,Paloma Bakker,Consumer,West
+CUST-00263,Hannah Demir,Consumer,North
+CUST-00469,Patrick Jansen,Consumer,Central
+CUST-00143,,Consumer,North
+CUST-00249,Esme Okonkwo,Consumer,West
+CUST-00192,Reza Reyes,Consumer,North
+CUST-00033,Sylvia Raman,Consumer,West
+CUST-00270,Dmitri Sundberg,Corporate,North
+CUST-00426,Zara Fitzgerald,Consumer,South
+CUST-00245,Zoya Novikova,Consumer,South
+CUST-00171,Pablo Nabil,Small Business,West
+CUST-00379,Greta Melnyk,Enterprise,East
+CUST-00228,Elena Donnelly,Consumer,East
+CUST-00114,Tessa Mahmood,,North
+CUST-00454,Adrian Ferrari,Consumer,Central
+CUST-00063,Ravi Duarte,Small Business,North
+CUST-00125,Greta Wren,Corporate,South
+CUST-00443,Kian Farrell,Consumer,East
+CUST-00124,Stefan Ashby,Small Business,Central
+CUST-00232,Bianca Donnelly,Consumer,Central
+CUST-00500,Josef Trelawney,Consumer,East
+CUST-00074,Priya Okonkwo,Corporate,Central
+CUST-00225,,Corporate,Central
+CUST-00300,Arthur Vogel,Consumer,West
+CUST-00215,Nadia Rossi,Corporate,South
+CUST-00480,Selin Jansen,Enterprise,North
+CUST-00047,Daniel Fitzgerald,Corporate,Central
+CUST-00435,Talia Visser,Small Business,North
+CUST-00034,Nadia Kowalski,Corporate,South
+CUST-00492,Yara Delgado,Consumer,
+CUST-00053,Rowan Osei,Consumer,NORTH
+CUST-00184,LARS NILSSON,Consumer,South
+CUST-00161,Tessa Brandt,Consumer,West
+CUST-00307,Sofia Vasquez,Corporate,Central
+CUST-00464,Nora Vogel,Consumer,South
+CUST-00057,Rina Mahmood,Consumer,North
+CUST-00119,Diego Demir,Corporate,East
+CUST-00493,Callum Lindgren,Consumer,South
+CUST-00251,Amara Nabil,Corporate,Central
+CUST-00054,ANDRE LINDQVIST,Small Business,West
+CUST-00001,Owen Solberg,Corporate,Central
+CUST-00475,Elsie Lindqvist,Consumer,South
+CUST-00280,Rowan Bakker,Consumer,WEST
+CUST-00345,Sasha Qureshi,Consumer,East
+CUST-00417,Anton Nwosu,Corporate,Central
+CUST-00332,Reza Chen,Consumer,North
+CUST-00416,Oscar Attah,Small Business,West
+CUST-00472,Beatrix Nwosu,Corporate,Central
+CUST-00111,Simon Sundberg,Corporate,Central
+CUST-00035,Sylvia Donnelly,Enterprise,South
+CUST-00338,Clara Sundberg,Small Business,East
+CUST-00128,Nina Bergstrom,Enterprise,South
+CUST-00199,Nina Volkov,Small Business,CENTRAL
+CUST-00044,Clara Sundberg,Consumer,East
+CUST-00190,Ingeborg Yildiz,Corporate,West
+CUST-00347,Leila Toure,Consumer,West
+CUST-00117,Arthur Novotny,Corporate,North
+CUST-00360,,Enterprise,South
+CUST-00252,SYLVIA VOLKOV,Enterprise,North
+CUST-00198,Victor Ainsworth,Corporate,North
+CUST-00293,Hugo Lindgren,Corporate,South
+CUST-00494,Lars Vidal,Small Business,North
+CUST-00105,Yusuf Melnyk,Consumer,North
+CUST-00187,Elsie Larsen,Corporate,West
+CUST-00210,,Consumer,North
+CUST-00185,Priya Callaghan,Small Business,North
+CUST-00075,Lars Mahmood,Enterprise,East
+CUST-00390,Idris Ferrari,Small Business,South
+CUST-00038,Ewan Sorensen,Consumer,South
+CUST-00072,Vera Solberg,Consumer,North
+CUST-00405,Hana Toure,Small Business,South
+CUST-00275,Bo Fairbanks,Small Business,North
+CUST-00349,Selin Kaur,Consumer,East
+CUST-00455,Henrik Thorne,Consumer,South
+CUST-00045,Talia Chen,Consumer,West
+CUST-00485,Lucas Rahim,Consumer,East
+CUST-00203,Anouk Ellington,Small Business,West
+CUST-00449,Miguel Kalinowski,Consumer,East
+CUST-00339,Lena Brennan,Consumer,Central
+CUST-00209,Hugo Sandoval,Consumer,West
+CUST-00049,Zara Mensah,Small Business,Central
+CUST-00359,Victor Berger,Consumer,West
+CUST-00156,Arthur Volkov,Consumer,North
+CUST-00178,Lucas Vidal,,West
+CUST-00008,Rina Bhatt,Consumer,East
+CUST-00256,Samir Rivas,Corporate,South
+CUST-00326,Leila Vogel,Consumer,East
+CUST-00143,UNKNOWN,Consumer,South
+CUST-00015,Ewan Aziz,Consumer,East
+CUST-00318,Nora Ellington,Consumer,West
+CUST-00456,Wren Brandt,Corporate,North
+CUST-00496,,Corporate,East
+CUST-00054,Andre Lindqvist,Corporate,South
+CUST-00453,Emil Vidal,Corporate,West
+CUST-00191,Miguel Novak,,West
+CUST-00474,Freya Marchetti,Consumer,South
+CUST-00095,Diego Sinclair,Consumer,Central
+CUST-00229,Rosa Qureshi,Corporate,east
+CUST-00003,Jonas Mahmood,Corporate,South
+CUST-00484,Mila Raman,Corporate,South
+CUST-00440,Sylvia Haruna,Small Business,South
+CUST-00394,Rowan Novak,Corporate,Central
+CUST-00025,Fatima Pires,Corporate,East
+CUST-00264,Mateo Krishnan,Consumer,Central
+CUST-00306,Camila Aziz,Consumer,Central
+CUST-00138,Delia Fairbanks,Consumer,North
+CUST-00298,Marta Nilsson,Consumer,North
+CUST-00376,Gustav Lindqvist,Consumer,Central
+CUST-00374,Hannah Haruna,Enterprise,North
+CUST-00151,Henrik Trelawney,Consumer,North
+CUST-00045,TALIA CHEN,Enterprise,West
+CUST-00089,Rosa Brandt,Consumer,South
+CUST-00367,Lucas Bergstrom,Corporate,North
+CUST-00202,Ari Marchetti,Small Business,East
+CUST-00478,Greta Ozturk,Corporate,East
+CUST-00313,Livia Demir,Corporate,Central
+CUST-00299,Priya Serrano,Consumer,West
+CUST-00031,Bruno Yildiz,Small Business,East
+CUST-00131,Rina Ellington,Corporate,East
+CUST-00257,Pablo Ferrari,Consumer,North
+CUST-00327,Pablo Mensah,Corporate,South
+CUST-00140,VICTOR YILDIZ,Corporate,West
+CUST-00201,Rosa Sorensen,Corporate,South
+CUST-00278,Anton Sandoval,Consumer,Central
+CUST-00253,Freya Whitlock,Enterprise,South
+CUST-00167,,Corporate,Central
+CUST-00463,Rowan Radev,,Central
+CUST-00262,Ari Ellington,Corporate,North
+CUST-00073,Patrick Vogel,Consumer,
+CUST-00156,ARTHUR VOLKOV,Corporate,North
+CUST-00182,Thomas Callaghan,Corporate,North
+CUST-00458,Delia Raman,Small Business,South
+CUST-00396,Talia Mensah,Small Business,West
+CUST-00224,Ravi Pemberton,Consumer,West
+CUST-00150,Hugo Marchetti,Small Business,East
+CUST-00400,Amara Corrigan,,West
+CUST-00179,Henrik Bhatt,Consumer,West
+CUST-00065,Ewan Jansen,Small Business,North
+CUST-00329,Ravi Sorensen,Consumer,South
+CUST-00155,Nathan Stroud,Consumer,North
+CUST-00129,Miguel Rossi,Consumer,Central
+CUST-00071,Vera Cardoso,Consumer,East
+CUST-00432,Bianca Fitzgerald,Small Business,East
+CUST-00037,Pablo Wexler,Corporate,East
+CUST-00118,Karim Serrano,Consumer,North
+CUST-00077,Sasha Holloway,Small Business,West
+CUST-00098,Livia Sundberg,Consumer,East
+CUST-00372,Lars Solberg,Consumer,West
+CUST-00133,Nora Jansen,Consumer,Central
+CUST-00488,Noor Larsen,Corporate,East
+CUST-00314,Lena Fitzgerald,Consumer,East
+CUST-00302,Owen Ferrari,Consumer,South
+CUST-00085,Arthur Ainsworth,Enterprise,West
+CUST-00415,Ingeborg Nilsson,Corporate,West
+CUST-00378,Otto Lindgren,Consumer,Central
+CUST-00231,Simon Aaltonen,Consumer,East
+CUST-00140,Victor Yildiz,Consumer,West
+CUST-00403,Stefan Kowalski,Consumer,East
+CUST-00137,Leila Takahashi,Corporate,West
+CUST-00355,Anton Bhatt,Corporate,West
+CUST-00409,Sana Pemberton,Small Business,West
+CUST-00334,Sana Larsen,Corporate,West
+CUST-00097,Juno Ozturk,Corporate,Central
+CUST-00411,VICTOR ALMEIDA,Corporate,Central
+CUST-00470,Leila Moreau,Consumer,North
+CUST-00439,Selin Falk,,West
+CUST-00486,Ari Aaltonen,,North
+CUST-00216,Talia Escobar,Consumer,North
+CUST-00050,Anton Trelawney,Small Business,Central
+CUST-00258,Lars Raman,Enterprise,North
+CUST-00213,Colin Demir,Corporate,Central
+CUST-00402,Aisha Ashby,Consumer,North 
+CUST-00337,Sylvia Bergman,Consumer,North
+CUST-00158,Ravi Nabil,Corporate,North
+CUST-00046,Sofia Vogel,Enterprise,North
+CUST-00288,Callum Toure,Corporate,North
+CUST-00418,Ingrid Sorensen,Small Business,East
+CUST-00461,Lena Osei,Small Business,Central
+CUST-00481,Idris Brandt,Enterprise,South
+CUST-00061,Patrick Toure,Consumer,North
+CUST-00134,Thomas Yildiz,Corporate,East
+CUST-00404,Gustav Sandoval,Corporate,East
+CUST-00028,Sasha Watanabe,Enterprise,
+CUST-00227,Colin Nazari,Small Business,Central
+CUST-00081,Tessa Mensah,Consumer,North
+CUST-00059,Livia Skovgaard,,Central
+CUST-00423,Jonas Okonkwo,Corporate,Central
+CUST-00375,Ingrid Rivas,Corporate,North
+CUST-00101,Vera Novikova,Small Business,West
+CUST-00026,Wren Qureshi,Corporate,East
+CUST-00196,Junko Novotny,Consumer,Central
+CUST-00066,Rahul Okonkwo,Corporate,South
+CUST-00465,,Consumer,West
+CUST-00406,Henrik Novak,Consumer,Central
+CUST-00068,Tessa Holloway,Consumer,West
+CUST-00414,Fatima Sinclair,,North
+CUST-00040,Sylvia Raman,Consumer,North
+CUST-00112,Beatrix Holloway,Consumer,East
+CUST-00051,Camila Jansen,Corporate,East
+CUST-00092,Patrick Osei,Corporate,East
+CUST-00413,Callum Yamada,Consumer,South
+CUST-00489,Elsie Corrigan,Corporate,East
+CUST-00430,,Consumer,South
+CUST-00368,Nina Marchetti,Consumer,West
+CUST-00399,Zara Sinclair,Small Business,Central
+CUST-00282,Nora Volkov,Corporate,Central
+CUST-00093,Elena Ainsworth,Corporate,South
+CUST-00358,Adrian Baptiste,Consumer,south
+CUST-00126,Delia Nilsson,Corporate,Central
+CUST-00170,GRETA RADEV,Corporate,West
+CUST-00411,Victor Almeida,Consumer,Central
+CUST-00428,Noor Nazari,Consumer,West
+CUST-00361,Idris Novak,Small Business,East
+CUST-00136,Freya Suleiman,Consumer,
+CUST-00083,Hugo Suleiman,Enterprise,Central
+CUST-00434,Sana Nazari,Consumer,South
+CUST-00222,Esme Mahmood,Consumer,Central
+CUST-00241,Josef Klein,Corporate,East
+CUST-00066,RAHUL OKONKWO,Corporate,South
+CUST-00194,Jonas Kaur,Consumer,North
+CUST-00356,Peter Eriksen,Small Business,West
+CUST-00108,Vera Duarte,Consumer,East
+CUST-00476,Ingeborg Toure,Corporate,North
+CUST-00333,Lucia Thorne,Corporate,West
+CUST-00082,Priya Nilsson,Consumer,East
+CUST-00442,,Small Business,East
+CUST-00234,Oscar Bhatt,Consumer,East
+CUST-00353,Jonas Kaur,,South
+CUST-00305,Owen Moreau,Consumer,South
+CUST-00324,Junko Moreau,Consumer,South
+CUST-00219,Lena Yamada,Small Business,West
+CUST-00421,Reza Okonkwo,Small Business,East
+CUST-00450,Anton Reyes,Corporate,West 
+CUST-00040,SYLVIA RAMAN,Corporate,Central
+CUST-00024,Rina Suleiman,Corporate,East
+CUST-00370,Hannah Vogel,Corporate,South
+CUST-00254,Reza Suleiman,Small Business,Central
+CUST-00341,Jonas Moreau,Corporate,South
+CUST-00388,Leila Kowalski,Corporate,West
+CUST-00017,Camila Moreau,Small Business,East
+CUST-00427,Oscar Berger,Consumer,East
+CUST-00451,Thomas Stroud,Corporate,North
+CUST-00420,Nora Farrell,Consumer,NORTH
+CUST-00261,Hannah Wexler,Small Business,East
+CUST-00058,Clara Pemberton,Consumer,North
+CUST-00445,Victor Serrano,Small Business,South
+CUST-00344,Oscar Skovgaard,Consumer,East
+CUST-00170,Greta Radev,Small Business,South
+CUST-00056,Neil Nwosu,Corporate,
+CUST-00252,Sylvia Volkov,Consumer,North
+CUST-00369,Stefan Lindgren,Consumer,West
+CUST-00382,Kofi Corrigan,Consumer,East
+CUST-00016,Beatrix Ashby,Small Business,West
+CUST-00163,Bo Klein,Corporate,West
+CUST-00357,Alma Raman,Consumer,North
+CUST-00408,Rosa Aziz,Consumer,South
+CUST-00348,Ravi Haruna,Consumer,East
+CUST-00294,Selin Nabil,Consumer,West
+CUST-00062,Paloma Aziz,Consumer,Central
+CUST-00243,Bianca Mahmood,Consumer,West
+CUST-00154,Wren Volkov,Consumer,Central
+CUST-00159,Alma Nwosu,Enterprise,North
+CUST-00269,Sana Vogel,Corporate,Central
+CUST-00244,Hana Melnyk,Consumer,North
+CUST-00424,Hana Toure,Consumer,South
+CUST-00336,Marta Larsen,Corporate,East
+CUST-00100,Pavel Larsen,Consumer,North
+CUST-00147,Emil Lindqvist,Corporate,South
+CUST-00447,Hannah Berger,Corporate,Central
+CUST-00266,Thomas Kaur,Corporate,Central
+CUST-00030,Ari Falk,Consumer,Central
+CUST-00466,Sasha Skovgaard,Consumer,East
+CUST-00036,Kian Baptiste,Consumer,South
+CUST-00086,Juno Klein,Small Business,West
+CUST-00340,Pavel Ferrari,Small Business,Central
+CUST-00460,Kian Lindqvist,Corporate,South
+CUST-00220,Callum Novak,Corporate,Central
+CUST-00393,Tessa Yamada,Corporate,Central
+CUST-00230,Junko Bassett,Corporate,North
+CUST-00011,Sofia Haruna,Consumer,Central
+CUST-00284,Greta Stroud,Small Business,Central
+CUST-00090,Wren Novikova,Consumer,Central 
+CUST-00467,Kian Novikova,Consumer,South
+CUST-00084,Idris Demir,Consumer,North
+CUST-00060,Priya Rossi,Consumer,North
+CUST-00386,Zoya Grady,Enterprise,West
+CUST-00247,Priya Aziz,Corporate,Central
+CUST-00304,Anton Berger,Corporate,North
+CUST-00010,Hugo Aaltonen,Corporate,East
+CUST-00292,Gustav Bergstrom,Corporate,South
+CUST-00246,Marta Qureshi,Corporate,Central
+CUST-00032,Ari Marchetti,Consumer,North
+CUST-00206,Mei Trelawney,Corporate,North
+CUST-00173,Marta Wren,Consumer,North
+CUST-00495,Peter Almeida,Consumer,South
+CUST-00391,Marta Pires,Enterprise,Central
+CUST-00116,Yusuf Callaghan,Consumer,East
+CUST-00146,Dmitri Solberg,Consumer,Central
+CUST-00371,Nina Larsen,,Central
+CUST-00296,Freya Visser,Corporate,North
+CUST-00277,Livia Nabil,Consumer,Central
+CUST-00106,Livia Nazari,Enterprise,East
+CUST-00452,Mateo Holloway,Consumer,East
+CUST-00207,,Consumer,South
+CUST-00395,Duncan Klein,Consumer,North
+CUST-00462,Josef Holloway,Consumer,East
+CUST-00268,Sofia Kalinowski,Enterprise,West
+CUST-00226,Delia Haruna,Consumer,west
+CUST-00164,Junko Mensah,Corporate,East
+CUST-00004,Priya Lindholm,Small Business,Central
+CUST-00323,Junko Ellington,Consumer,West
+CUST-00236,Patrick Serrano,Corporate,Central 
+CUST-00002,Yara Okonkwo,Consumer,South
+CUST-00148,Anton Fairbanks,Small Business,North
+CUST-00102,Pavel Haruna,Consumer,East
+CUST-00317,Alma Vasquez,,South
+CUST-00055,Omar Wren,Small Business,West
+CUST-00319,Duncan Osei,Enterprise,East
+CUST-00255,Emil Abadi,Small Business,East
+CUST-00132,Hana Ellington,Small Business,East
+CUST-00121,Freya Holloway,Consumer,West
+CUST-00331,Priya Ainsworth,Small Business,East
+CUST-00312,Neil Brandt,Consumer,Central
+CUST-00316,Karim Volkov,Consumer,North
+CUST-00335,,Corporate,West
+CUST-00121,FREYA HOLLOWAY,Small Business,West
+CUST-00309,Mila Nilsson,Corporate,North
+CUST-00285,Selin Okonkwo,Consumer,West
+CUST-00204,Nina Ozturk,,South
+CUST-00441,Camila Aaltonen,Enterprise,North
+CUST-00286,Livia Lindgren,Consumer,West
+CUST-00149,Greta Yildiz,Consumer,Central
+CUST-00189,Omar Jansen,Corporate,West
+CUST-00238,Felix Novak,Corporate,East
+CUST-00479,Alma Fitzgerald,Consumer,Central
+CUST-00248,Rosa Ellington,Consumer,South
+CUST-00007,Priya Sandoval,Consumer,Central
+CUST-00330,Adrian Duarte,Corporate,West
+CUST-00176,Dmitri Aziz,Corporate,North
+CUST-00483,Lena Toure,Consumer,SOUTH
+CUST-00364,Marcus Delgado,Consumer,South
+CUST-00080,Sasha Farrow,Consumer,East
+CUST-00064,Clara Duarte,Consumer,West
+CUST-00297,Juno Thorne,Consumer,East
+CUST-00422,Amara Fitzgerald,Small Business,
+CUST-00184,Lars Nilsson,Corporate,South
+CUST-00120,Rahul Almeida,Consumer,North
+CUST-00431,Pavel Novak,Small Business,North
+CUST-00354,Gabriel Nabil,Corporate,North
+CUST-00087,Lars Petrov,Corporate,Central
+CUST-00401,Hugo Fitzgerald,Corporate,Central
+CUST-00311,Kofi Nwosu,Enterprise,South
+CUST-00139,Samir Toure,Consumer,West
+CUST-00237,Victor Brennan,Consumer,North
+CUST-00113,Mila Ozturk,Corporate,Central
+CUST-00260,Priya Sundberg,Consumer,East
+CUST-00425,Daniel Novak,Corporate,East
+CUST-00271,Emil Takahashi,Small Business,South
+CUST-00436,Emil Pires,Corporate,West
+CUST-00235,Samir Ellington,Consumer,North
+CUST-00265,Henrik Bassett,Consumer,North
+CUST-00287,Nathan Rossi,Consumer,West
+CUST-00012,Bruno Holloway,Consumer,South
+CUST-00014,Zara Radev,Consumer,West
+CUST-00291,Josef Falk,Consumer,East
+CUST-00211,Beatrix Bakker,Consumer,Central
+CUST-00281,Diego Lindgren,Consumer,Central
+CUST-00153,Lucia Takahashi,Small Business,East
+CUST-00099,Otto Falk,Consumer,Central
+CUST-00490,Lars Sundberg,Corporate,East
+CUST-00273,Esme Duarte,Corporate, North
+CUST-00180,Miguel Sandoval,Consumer,Central
+CUST-00290,Victor Rossi,Consumer,West
+CUST-00322,Sofia Kaur,Consumer,Central
+CUST-00343,Henrik Yildiz,Consumer,Central
+CUST-00448,Pablo Solberg,Enterprise,East
+CUST-00259,Zoya Attah,Consumer,Central
+CUST-00168,Elena Rossi,Small Business,West
+CUST-00387,Ravi Lindholm,Consumer,North
+CUST-00487,Ravi Rahim,Corporate,West
+CUST-00346,Henrik Almeida,Consumer,West
+CUST-00041,Anouk Visser,Consumer,South
+CUST-00322,SOFIA KAUR,Corporate,West
+CUST-00029,Ingeborg Farrow,Enterprise,South
+CUST-00342,Victor Skovgaard,Consumer,
+CUST-00027,Josef Novotny,Corporate,East
+CUST-00021,Camila Mensah,Corporate,East
+CUST-00005,Bo Bhatt,Corporate,West
+CUST-00022,Callum Thorne,Consumer,South
+CUST-00103,Lars Rahim,Consumer,West
+CUST-00352,Zoya Nazari,Small Business,Central
+CUST-00321,Gustav Okonkwo,Consumer,North
+CUST-00142,Freya Callaghan,Consumer,Central
+CUST-00052,Stefan Takahashi,Small Business,East
+CUST-00438,Marta Kalinowski,Consumer,North
+CUST-00169,Zara Marchetti,Consumer,North
+CUST-00295,Beatrix Sundberg,Consumer,Central
+CUST-00381,Owen Delgado,Corporate,Central
+CUST-00363,Nina Nazari,Consumer,West
+CUST-00020,Camila Aaltonen,Consumer,west
+CUST-00392,Karim Aziz,Small Business,Central
+CUST-00144,Rahul Ainsworth,Corporate,North
+CUST-00197,Diego Kowalski,Corporate,East
+CUST-00240,Pavel Osei,Consumer,South
+CUST-00069,Elena Ferrari,Consumer,South
+CUST-00130,Sofia Callaghan,,West
+CUST-00039,Clara Wren,Small Business,Central
+CUST-00362,Thomas Ashby,Consumer,West
+CUST-00208,Talia Corrigan,Corporate,West
+CUST-00398,Camila Radev,Consumer,Central
+CUST-00283,Henrik Eriksen,Consumer,West
+CUST-00377,Callum Lindqvist,Consumer,South
+CUST-00437,Arthur Ellington,Consumer,South
+CUST-00162,Juno Mahmood,Consumer,West
+CUST-00200,Kian Abadi,Small Business,North
+CUST-00221,,Corporate,North
+CUST-00444,Vera Thorne,Consumer,West
+CUST-00217,Daniel Bergman,Corporate,
+CUST-00365,Ravi Corrigan,Corporate,West
+CUST-00301,Sofia Toure,Consumer,East
+CUST-00433,Nadia Yamada,Corporate,
+CUST-00320,Mila Aaltonen,Consumer,West
+CUST-00019,Clara Yamada,Consumer,North
+CUST-00127,Patrick Petrov,Consumer,East
+CUST-00104,Anouk Moreau,Consumer,West
+CUST-00274,Rosa Rossi,Consumer,North
+CUST-00006,Owen Holloway,Enterprise,East
+CUST-00385,Victor Suleiman,Corporate,west
+CUST-00109,Selin Corrigan,Consumer,West
+CUST-00471,Omar Vidal,Consumer,Central
+CUST-00233,Callum Trelawney,Small Business,South
+CUST-00491,Lars Baptiste,Enterprise,South
+CUST-00177,Hana Rossi,Consumer,North
+CUST-00446,Dmitri Cardoso,Consumer,West
+CUST-00477,Dmitri Yildiz,Small Business,North
+CUST-00410,Arthur Sinclair,Consumer,Central 
+CUST-00214,Talia Aaltonen,,South
+CUST-00468,Livia Vasquez,Corporate,East
+CUST-00165,Arthur Costa,Consumer,central
+CUST-00308,Sylvia Abadi,Corporate,Central
+CUST-00091,Owen Whitlock,Small Business,Central
+CUST-00499,Adrian Sorensen,Corporate,North
+CUST-00397,Ravi Sandoval,Small Business,East
+CUST-00497,Duncan Aziz,Consumer,North
+CUST-00223,Selin Pemberton,Consumer,West
+CUST-00122,Otto Mahmood,Consumer,West
+CUST-00135,Henrik Callaghan,Corporate,South
+CUST-00239,Dmitri Chen,Consumer,North
+CUST-00473,Idris Mahmood,,West
+CUST-00063,RAVI DUARTE,Enterprise,East
+CUST-00043,Felix Bakker,Consumer,West
+CUST-00123,Mateo Baptiste,,South
+CUST-00429,Sofia Trelawney,Corporate,North
+CUST-00076,Alma Okonkwo,Enterprise,East
+CUST-00384,Anouk Pires,Corporate,South
+CUST-00218,Gabriel Qureshi,Corporate,South
+CUST-00088,Omar Duarte,Consumer,West
+CUST-00175,Sofia Brandt,Corporate,West
+CUST-00407,Hugo Larsen,Consumer,South
+CUST-00498,Freya Holloway,Small Business,West
+CUST-00152,Livia Toure,Consumer,North
+CUST-00172,Thomas Krishnan,Consumer,South 
+CUST-00366,Elena Serrano,Enterprise,North
+CUST-00315,Idris Reyes,Consumer,South
+CUST-00325,Vera Kaur,Consumer,South
+CUST-00250,Omar Sandoval,Corporate,East 
+CUST-00048,Yusuf Kowalski,Corporate,
+CUST-00078,Owen Kowalski,Corporate,Central
+CUST-00009,Emil Kalinowski,Small Business,South
+CUST-00107,Juno Sinclair,Small Business,East
+CUST-00070,Sylvia Baptiste,Enterprise,Central
+CUST-00289,Yara Novikova,Consumer,NORTH
+CUST-00389,Lucia Aziz,Consumer,West
+CUST-00110,Lars Callaghan,Consumer,South
+CUST-00350,Gabriel Rivas,Small Business,North
+CUST-00096,Camila Novotny,Corporate,North
+CUST-00276,Hannah Lindgren,Corporate,West
+CUST-00166,Nadia Lindholm,Consumer,North
+CUST-00174,Yara Haruna,Consumer,South
+CUST-00422,AMARA FITZGERALD,Small Business,
+CUST-00459,Idris Sandoval,Consumer,North
+CUST-00018,Astrid Baptiste,Enterprise,North
+CUST-00457,Colin Serrano,Corporate,West
+CUST-00279,Andre Jansen,Small Business,North
+CUST-00205,Victor Costa,Consumer,Central
+CUST-00079,,Corporate,South
+CUST-00272,Lena Baptiste,Consumer,East
+CUST-00193,Omar Larsen,Consumer,North
+CUST-00013,Wren Vogel,Small Business,North
+CUST-00412,Sasha Farrow,Consumer,South
+CUST-00160,Freya Brandt,Consumer,South
+CUST-00183,Juno Stroud,,West
+CUST-00482,Nina Sandoval,Small Business,West
+CUST-00145,Yusuf Bergman,Consumer,Central
+CUST-00186,Tessa Lindgren,Small Business,South
+CUST-00242,Clara Nazari,Small Business,West
+CUST-00212,Emil Krishnan,Consumer,South
+CUST-00351,Hannah Qureshi,Consumer,Central
+CUST-00094,Henrik Krishnan,Consumer,Central
+CUST-00303,Nora Novikova,Small Business,West
+CUST-00181,,Small Business,Central
+CUST-00188,Ingrid Ellington,Consumer,SOUTH
+CUST-00067,,Corporate,East
+CUST-00195,Talia Larsen,Consumer,East
+CUST-00141,Karim Yamada,Consumer, East
+CUST-00310,Dmitri Krishnan,Consumer,Central
+CUST-00157,Bianca Takahashi,Consumer,North
+CUST-00373,Hannah Moreau,Small Business,West

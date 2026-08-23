@@ -1,0 +1,695 @@
+================================================================================
+PART 3 - VALIDATE ANALYTICS AND REPORTING READINESS
+Project: Preparing an Analytics-Ready Dataset in Microsoft Fabric
+Lakehouse: lh_retail_ops
+Tables under test: sales_raw (5,025 rows), customers (515 rows)
+Verdict: DOES NOT SUPPORT RELIABLE REPORTING IN CURRENT STATE - see section 10
+================================================================================
+
+METHOD
+Six validation workflows were executed against the Lakehouse tables through the
+SQL analytics endpoint. No data was modified at any point; every statement is a
+read.
+
+Aggregation, join and filter validation were each run as a SEQUENCE of queries
+rather than a single query. Each version corrected one assumption exposed by the
+version before it, and every version's result is recorded below - including the
+wrong ones. The intermediate results are the evidence. A validation report that
+shows only the final query proves nothing, because it cannot demonstrate what
+the naive query would have returned to an analyst who did not know better.
+
+  Check                        Queries run   Section
+  ---------------------------  ------------  -------
+  1  Sample record inspection       6           1
+  2  Schema review                  5           2
+  3  Row count validation           4           3
+  4  Aggregation validation         4 versions  4
+  5  Join validation                5 versions  5
+  6  Filtering validation           5 versions  6
+
+--------------------------------------------------------------------------------
+1. SAMPLE RECORD INSPECTION
+--------------------------------------------------------------------------------
+
+PURPOSE
+Look at real rows before writing any aggregate. Profiling statistics describe a
+column; only reading records shows what the values actually look like.
+
+QUERY 1.1 - first rows of the fact table
+  SELECT * FROM sales_raw LIMIT 5;
+
+  TXN-001562  CUST-00288  1250.06   2024-08-25  N
+  TXN-000039  CUST-00493  101.01    2024-12-25  South
+  TXN-000423  CUST-00386  150.10    2024-02-18  West
+  TXN-004454  CUST-00035  113.13    2024-07-21  South
+  TXN-001040  CUST-00425  19.26     2024-08-02  East
+
+  Observation: row 1 already shows a region recorded as "N" rather than "North".
+  A defect was visible in the first five records inspected, before any profiling
+  query was written. This is why sample inspection comes first.
+
+QUERY 1.2 - targeted sampling of suspicious values
+Rather than sampling randomly, rows were selected where a column deviated from
+the dominant pattern. Representative records:
+
+  Key format variants
+    TXN-000634  'cust-00184'   lowercase
+    TXN-001270  'CUST-00148 '  trailing space
+    TXN-003926  ' CUST-00110'  leading space
+    TXN-001474  'CUST-403'     zero padding lost
+    TXN-004111  'CUST-93453'   no such customer exists
+
+  Amount variants
+    TXN-002319  ''             blank
+    TXN-003686  '72.25 USD'    currency suffix
+    TXN-003098  '$1222.26'     currency prefix
+    TXN-000414  '-25.98'       negative, no refund flag
+    TXN-001374  '999999.99'    implausible magnitude
+
+  Date variants
+    TXN-001920  '21/10/2025'   dd/MM/yyyy instead of yyyy-MM-dd
+    TXN-003442  ''             blank
+
+  Region variants
+    TXN-001562  'N'            single-letter code
+    TXN-004236  ' East'        leading space
+    TXN-003999  'east'         lowercase
+
+QUERY 1.3 - inspecting a duplicated transaction
+  SELECT * FROM sales_raw WHERE transaction_id = 'TXN-004999';
+
+  TXN-004999  CUST-00469  116.69  2024-02-23  Central
+  TXN-004999  CUST-00469  116.69  2024-02-23  Central
+
+  Both rows are byte-identical. This is a re-sent record, not two genuine sales
+  that happen to share an id, so deduplication is safe rather than lossy.
+
+QUERY 1.4 - inspecting a duplicated customer
+  SELECT * FROM customers WHERE customer_id = 'CUST-00063';
+
+  CUST-00063  'Ravi Duarte'  'Small Business'  'North'
+  CUST-00063  'RAVI DUARTE'  'Enterprise'      'East'
+
+  These rows are NOT identical. The same customer id carries two different
+  segments and two different regions. Deduplication here is not a clerical
+  exercise - it requires deciding which record is authoritative, and that choice
+  changes which segment the customer's revenue is reported under. This finding
+  materially changed the plan for the curated layer.
+
+QUERY 1.5 - inspecting incomplete dimension records
+  SELECT * FROM customers
+  WHERE customer_name = '' OR customer_segment = '' OR region = '';
+
+  CUST-00143  ''               'Consumer'   'North'
+  CUST-00114  'Tessa Mahmood'  ''           'North'
+  CUST-00225  ''               'Corporate'  'Central'
+  CUST-00492  'Yara Delgado'   'Consumer'   ''
+
+  The gaps are empty strings, not NULLs. This matters: IS NULL returns nothing
+  and would have reported the dimension as complete. Completeness checks must
+  test for both conditions.
+
+WHAT SAMPLE INSPECTION CONFIRMED
+  - The data is structurally well-formed. Every row has the right number of
+    columns, the delimiter and encoding are correct, and no parsing errors
+    occurred on load.
+  - The problems are at value level, not file level.
+  - Missing data is represented as empty strings rather than NULL, which changes
+    how every subsequent completeness check must be written.
+  - Duplicate transactions are exact copies, but duplicate customers are not -
+    two different classes of problem requiring two different treatments.
+
+--------------------------------------------------------------------------------
+2. SCHEMA REVIEW
+--------------------------------------------------------------------------------
+
+QUERY 2.1 - types as registered in the Lakehouse
+  DESCRIBE TABLE sales_raw;
+  DESCRIBE TABLE customers;
+
+  sales_raw          declared in spec   registered in Delta   match
+  -----------------  -----------------  --------------------  -----
+  transaction_id     STRING             STRING                yes
+  customer_id        STRING             STRING                yes
+  amount             DECIMAL            STRING                NO
+  transaction_date   DATE               STRING                NO
+  region             STRING             STRING                yes
+
+  customers          declared in spec   registered in Delta   match
+  -----------------  -----------------  --------------------  -----
+  customer_id        STRING             STRING                yes
+  customer_name      STRING             STRING                yes
+  customer_segment   STRING             STRING                yes
+  region             STRING             STRING                yes
+
+  Two of the nine columns do not match their specification. Both failures are in
+  the fact table, and both are on the columns analytics depends on most: the
+  measure and the time anchor.
+
+QUERY 2.2 - why amount failed to infer as numeric
+  SELECT COUNT(*) AS rows_that_will_not_cast
+  FROM   sales_raw
+  WHERE  TRY_CAST(amount AS DECIMAL(12,2)) IS NULL;
+  Result: 65
+
+  65 of 5,025 values cannot be parsed as a decimal. Schema inference examines
+  the column and correctly refuses to declare it numeric. The loader behaved
+  properly; the source data is at fault.
+
+QUERY 2.3 - why transaction_date failed to infer as date
+  SELECT COUNT(*) AS non_iso_dates
+  FROM   sales_raw
+  WHERE  transaction_date <> '' AND transaction_date NOT RLIKE '^\\d{4}-\\d{2}-\\d{2}$';
+  Result: 35   (plus 15 blanks = 50 rows unparseable by a single format)
+
+QUERY 2.4 - key format profile
+  SELECT LENGTH(customer_id) AS len, COUNT(*) AS rows
+  FROM   sales_raw GROUP BY LENGTH(customer_id) ORDER BY len;
+
+  len   rows    interpretation
+  ----  ------  ------------------------------------------
+    6        1  CUST-4    - padding lost
+    7        3  CUST-64   - padding lost
+    8       26  CUST-403  - padding lost
+   10    4,955  CUST-00042 - correct format
+   11       40  ' CUST-00042' - whitespace
+
+  A length histogram on a key column is one of the cheapest and most revealing
+  schema checks available. 70 rows deviate from the expected 10-character
+  format, and the deviation is visible without inspecting a single value.
+
+QUERY 2.5 - domain profile of categorical columns
+  SELECT DISTINCT customer_segment FROM customers;
+  Result: '', 'Consumer', 'Corporate', 'Enterprise', 'Small Business'
+          4 valid values plus an empty string.
+
+  SELECT DISTINCT region FROM sales_raw;
+  Result: 31 distinct literals -
+    '', ' Central', ' East', ' North', ' South', ' West',
+    'C', 'CENTRAL', 'Central', 'Central ', 'E', 'EAST', 'East', 'East ',
+    'N', 'NORTH', 'North', 'North ', 'S', 'SOUTH', 'South', 'South ',
+    'W', 'WEST', 'West', 'West ', 'central', 'east', 'north', 'south', 'west'
+
+  Five regions are represented by 31 spellings: canonical, lowercase, uppercase,
+  leading space, trailing space and single-letter code, plus blank.
+
+WHAT SCHEMA REVIEW CONFIRMED
+  - The Delta schema is registered correctly and both tables are queryable.
+  - Column names and column counts match the specification exactly.
+  - Two columns did not receive their intended data types, and in both cases the
+    cause is unparseable source values rather than a loader configuration error.
+  - No table can be aggregated or filtered by time until these two columns are
+    explicitly cast.
+
+--------------------------------------------------------------------------------
+3. ROW COUNT VALIDATION
+--------------------------------------------------------------------------------
+
+QUERY 3.1 - source file to Delta table reconciliation
+  Source customers.csv     515 data rows  ->  customers   515 rows   MATCH
+  Source sales_raw.csv   5,025 data rows  ->  sales_raw 5,025 rows   MATCH
+
+  No rows were lost or added during ingestion. The Load to Tables operation is
+  confirmed lossless, which means every problem found from here on originates in
+  the source data and not in the pipeline.
+
+QUERY 3.2 - grain validation on the fact table
+  SELECT COUNT(*) AS total_rows,
+         COUNT(DISTINCT transaction_id) AS distinct_ids,
+         COUNT(*) - COUNT(DISTINCT transaction_id) AS surplus
+  FROM   sales_raw;
+
+  total_rows 5,025   distinct_ids 5,000   surplus 25        FAIL
+
+  The stated grain - one row per transaction - does not hold. 25 transactions
+  are recorded twice.
+
+QUERY 3.3 - grain validation on the dimension
+  SELECT COUNT(*) AS total_rows,
+         COUNT(DISTINCT customer_id) AS distinct_ids,
+         COUNT(*) - COUNT(DISTINCT customer_id) AS surplus
+  FROM   customers;
+
+  total_rows 515   distinct_ids 500   surplus 15            FAIL
+
+  15 customer ids appear on two rows each. A dimension key that is not unique
+  makes every join to this table unsafe.
+
+QUERY 3.4 - completeness counts
+  SELECT SUM(CASE WHEN customer_name = '' THEN 1 ELSE 0 END)    AS missing_name,
+         SUM(CASE WHEN customer_segment = '' THEN 1 ELSE 0 END) AS missing_segment,
+         SUM(CASE WHEN region = '' THEN 1 ELSE 0 END)           AS missing_region
+  FROM   customers;
+
+  missing_name 15   missing_segment 18   missing_region 11
+  (44 distinct rows are affected by at least one gap.)
+
+WHAT ROW COUNT VALIDATION CONFIRMED
+  - Ingestion is lossless and reproducible.
+  - Both tables FAIL their grain test. Neither key is unique.
+  - This is the single most important finding of the validation exercise,
+    because a broken grain invalidates every count, sum and join built on top.
+
+--------------------------------------------------------------------------------
+4. AGGREGATION VALIDATION - FOUR VERSIONS
+--------------------------------------------------------------------------------
+
+The first aggregate written is almost never the correct one. Each version below
+was run after inspecting the previous result and correcting one assumption.
+
+VERSION A1 - the naive query an analyst would write first
+  SELECT COUNT(*)      AS transactions,
+         COUNT(amount) AS amounts_present,
+         SUM(TRY_CAST(amount AS DECIMAL(12,2))) AS revenue,
+         AVG(TRY_CAST(amount AS DECIMAL(12,2))) AS avg_order_value
+  FROM   sales_raw;
+
+  transactions       5,025
+  amounts_present    4,960
+  revenue            2,903,501.82
+  avg_order_value    585.38
+
+  Two problems visible immediately:
+   - COUNT(*) is 5,025 but COUNT(amount) is 4,960. 65 rows have no usable
+     amount, and SUM ignored them silently without warning.
+   - Average order value computed as AVG(amount) gives 585.38, but computed as
+     SUM / COUNT(*) gives 577.81. Both are defensible; both will be quoted as
+     "the" average. The two denominators differ by the 65 unusable rows.
+
+VERSION A2 - deduplicate on transaction_id first
+  WITH deduped AS (SELECT DISTINCT transaction_id, amount FROM sales_raw)
+  SELECT COUNT(*) AS transactions,
+         SUM(TRY_CAST(amount AS DECIMAL(12,2))) AS revenue
+  FROM   deduped;
+
+  transactions   5,000
+  revenue        2,895,114.56      (down 8,387.26 from A1)
+
+  25 duplicate rows removed, revenue falls as expected. Grain now correct.
+
+VERSION A3 - exclude negative amounts to separate refunds from sales
+  ... WHERE TRY_CAST(amount AS DECIMAL(12,2)) >= 0
+
+  transactions   4,905
+  revenue        2,904,602.72      (UP 9,488.16 from A2)
+
+  The revenue figure INCREASED after removing 30 rows. This is not an error and
+  it is the most instructive moment of the whole validation exercise: those 30
+  rows were refunds carrying negative values, and A1 and A2 had been quietly
+  netting them off against sales. The reported figure was never gross revenue
+  and was never net revenue either - it was an undocumented mixture of the two.
+  Total refunds: -9,488.16.
+
+  A single query would never have exposed this. It only became visible because
+  the result moved in the opposite direction to the one expected, and the
+  discrepancy was investigated rather than accepted.
+
+VERSION A4 - exclude implausible outliers
+  ... AND TRY_CAST(amount AS DECIMAL(12,2)) <= 40000
+
+  transactions   4,899
+  revenue        1,533,214.74      (down 1,371,387.98 from A3)
+  avg_order      312.96
+
+  Six rows contributed 1,371,387.98 - 47% of the previously reported total. Their
+  values (999999.99, 99999.99, 88888.00, 75000.00, 62500.00, 45000.00) are
+  consistent with decimal-point and units entry errors rather than genuine
+  large sales. Excluding them halves reported revenue and moves average order
+  value from 585.38 to 312.96.
+
+RECONCILIATION OF THE FOUR VERSIONS
+
+  Version  Description                       Revenue         Rows
+  -------  --------------------------------  --------------  -----
+  A1       As loaded, no adjustments         2,903,501.82    5,025
+  A2       Deduplicated on transaction_id    2,895,114.56    5,000
+  A3       Refunds separated out             2,904,602.72    4,905
+  A4       Outliers excluded                 1,533,214.74    4,899
+
+  A1 overstates the defensible figure by 89.4%. Each of the four numbers can be
+  produced by a reasonable-looking query against the same table, and nothing in
+  the table itself indicates which is correct.
+
+--------------------------------------------------------------------------------
+5. JOIN VALIDATION - FIVE VERSIONS
+--------------------------------------------------------------------------------
+
+VERSION J1 - straightforward inner join
+  SELECT COUNT(*) AS joined_rows,
+         SUM(TRY_CAST(s.amount AS DECIMAL(12,2))) AS revenue
+  FROM   sales_raw s
+  JOIN   customers c ON s.customer_id = c.customer_id;
+
+  joined_rows  5,295        revenue  3,031,919.72
+
+  FAIL. The join returned 5,295 rows from a 5,025-row fact table. A fact-to-
+  dimension join must never increase the row count. The duplicate customer keys
+  are causing fan-out: transactions belonging to the 15 duplicated customers are
+  being counted twice. Revenue is inflated to 3,031,919.72 - 98% above the
+  defensible A4 figure.
+
+VERSION J2 - switch to LEFT JOIN to expose what the inner join was hiding
+  ... LEFT JOIN customers c ON s.customer_id = c.customer_id
+
+  joined_rows  5,470        unmatched rows  175
+
+  The row count rose again, revealing a second, opposite problem underneath the
+  first. 175 transactions have no matching customer at all. The inner join in J1
+  was silently discarding them while simultaneously duplicating others - two
+  errors partially cancelling, which is why J1's row count of 5,295 looked
+  merely odd rather than obviously broken.
+
+VERSION J3 - deduplicate the dimension before joining
+  WITH dim AS (SELECT customer_id, MAX(customer_name) AS customer_name,
+                      MAX(customer_segment) AS customer_segment,
+                      MAX(region) AS region
+               FROM customers GROUP BY customer_id)
+  SELECT COUNT(*) ... LEFT JOIN dim ...
+
+  joined_rows  5,025        unmatched rows  175
+
+  Row count now equals the fact table exactly. Fan-out is eliminated. The 175
+  unmatched rows remain and are now clearly visible rather than being masked.
+
+VERSION J4 - normalise the key on both sides
+  ON CONCAT('CUST-', LPAD(SPLIT(UPPER(TRIM(s.customer_id)), '-')[1], 5, '0'))
+     = UPPER(TRIM(d.customer_id))
+
+  joined_rows  5,025        unmatched rows  45
+
+  130 of the 175 unmatched rows were recoverable - they were the same customers
+  written in a different case, with stray whitespace, or with the zero padding
+  lost. Only 45 rows reference a customer id that does not exist in any form.
+  The distinction matters: 130 rows were a formatting problem for the engineer
+  to fix, 45 are a data problem for the source system owner to answer for.
+
+VERSION J5 - deduplicate the fact table as well
+  joined_rows  5,000        unmatched rows  45
+
+  Final state. Row count equals distinct transaction count, the dimension key is
+  unique, the join neither adds nor drops rows, and the 45 genuine orphans are
+  retained and flagged rather than silently lost.
+
+RECONCILIATION OF THE FIVE VERSIONS
+
+  Version  Join                              Rows    Unmatched  Verdict
+  -------  --------------------------------  ------  ---------  -------
+  J1       INNER, raw keys                   5,295   hidden     FAIL - fan-out
+  J2       LEFT, raw keys                    5,470   175        FAIL - fan-out
+  J3       LEFT, deduplicated dimension      5,025   175        partial
+  J4       LEFT, deduplicated + normalised   5,025   45         partial
+  J5       LEFT, both tables deduplicated    5,000   45         PASS
+
+  The definitive test is J5: joined row count equals distinct fact row count.
+  Any pipeline change that breaks this equality should fail the build.
+
+--------------------------------------------------------------------------------
+6. FILTERING VALIDATION - FIVE VERSIONS
+--------------------------------------------------------------------------------
+
+The business question tested: "What was revenue in the North region?"
+
+VERSION F1 - filter exactly as a slicer would
+  SELECT COUNT(*), SUM(TRY_CAST(amount AS DECIMAL(12,2)))
+  FROM sales_raw WHERE region = 'North';
+
+  rows 1,034      revenue 355,411.52
+
+VERSION F2 - normalise case and whitespace
+  WHERE UPPER(TRIM(region)) = 'NORTH'
+
+  rows 1,093      revenue 372,732.77     (+59 rows, +17,321.25)
+
+VERSION F3 - also accept the single-letter code
+  WHERE UPPER(TRIM(region)) IN ('NORTH', 'N')
+
+  rows 1,111      revenue 379,719.53     (+18 rows, +6,986.76)
+
+VERSION F4 - filter on the customer's home region instead
+  WHERE UPPER(TRIM(c.region)) = 'NORTH'   (joined to the dimension)
+
+  rows 970
+
+  A different question entirely, and a materially different answer. F3 counts
+  sales BOOKED in the North; F4 counts sales BY CUSTOMERS WHO LIVE in the North.
+  Both are legitimate business questions and both would be described by a
+  stakeholder as "revenue in the North region".
+
+VERSION F5 - do the regional filters cover the whole table?
+  SELECT COUNT(*) FROM sales_raw
+  WHERE region IN ('North','South','East','West','Central');
+  Result: 4,615 of 5,025.
+
+  410 rows - 8.2% of all transactions - match none of the five exact regional
+  filters. They are invisible to every regional slicer while still counting
+  toward the company total, so regional figures will not reconcile to the
+  overall figure and the gap will be blamed on rounding or on a broken visual.
+
+  Per-region comparison:
+
+    Region    Exact filter   Normalised filter   Rows recovered
+    --------  -------------  ------------------  --------------
+    North             1,034               1,111              77
+    South               889                 978              89
+    East                776                 846              70
+    West                947               1,019              72
+    Central             969               1,041              72
+    --------  -------------  ------------------  --------------
+    Total             4,615               4,995             380
+    Blank                 -                  30
+    Grand total       4,615               5,025
+
+  Only the normalised filter reconciles to the table total.
+
+DATE FILTERING - a second filtering failure
+  SELECT COUNT(*) FROM sales_raw
+  WHERE YEAR(TO_DATE(transaction_date, 'yyyy-MM-dd')) = 2025;
+  Result: 2,505
+
+  SELECT COUNT(*) FROM sales_raw
+  WHERE YEAR(COALESCE(TO_DATE(transaction_date, 'yyyy-MM-dd'),
+                      TO_DATE(transaction_date, 'dd/MM/yyyy'))) = 2025;
+  Result: 2,524
+
+  A single-format parse silently drops 19 transactions from the 2025 figure, and
+  50 rows overall have no parseable date. In a year-over-year visual these rows
+  simply do not appear, and the loss is invisible.
+
+WHAT FILTERING VALIDATION CONFIRMED
+  - The same business question returns 970, 1,034, 1,093 or 1,111 rows depending
+    on how the filter is written, with no error raised in any case.
+  - Regional totals do not sum to the table total under exact matching.
+  - Two analysts can produce different regional revenue figures and both be
+    correct according to the query they wrote.
+  - Time-based filtering silently omits rows whose date format differs.
+
+--------------------------------------------------------------------------------
+7. WHICH VALIDATION CHECKS WERE PERFORMED
+--------------------------------------------------------------------------------
+
+  1. Sample record inspection - first-rows preview of both tables, targeted
+     sampling of anomalous values across all five columns of the fact table,
+     and record-level inspection of one duplicated transaction, one duplicated
+     customer and the incomplete dimension rows.
+
+  2. Schema review - DESCRIBE on both tables comparing registered Delta types
+     against the specification; root-cause queries explaining why two columns
+     failed type inference; a key-length histogram; and a domain profile of both
+     categorical columns.
+
+  3. Row count validation - source file to Delta table reconciliation for both
+     tables, grain tests comparing COUNT(*) to COUNT(DISTINCT key) on both
+     tables, and completeness counts on the dimension.
+
+  4. Aggregation validation - four progressive versions of the revenue query,
+     each correcting one assumption exposed by the previous result, with all
+     four figures reconciled against each other.
+
+  5. Join validation - five progressive versions moving from a naive inner join
+     to a normalised, deduplicated left join, with row counts and unmatched
+     counts recorded at every stage.
+
+  6. Filtering validation - five versions of one regional filter plus a
+     two-version date filter, testing whether the same business question returns
+     a stable answer.
+
+--------------------------------------------------------------------------------
+8. WHAT THE VALIDATION RESULTS CONFIRMED
+--------------------------------------------------------------------------------
+
+CONFIRMED SOUND
+  - Ingestion is lossless. Row counts reconcile exactly to the source files.
+  - Column names, column counts and table structure match the specification.
+  - The star schema design is correct: one fact table, one dimension, one
+    identifiable join key, one additive measure, one time anchor.
+  - Duplicate transactions are exact copies, so deduplication is safe.
+  - 130 of the 175 join failures are recoverable by key normalisation.
+  - After normalisation and deduplication, the join is clean: 5,000 fact rows in,
+    5,000 rows out, no fan-out, 45 genuine orphans isolated and accounted for.
+  - A defensible revenue figure of 1,533,214.74 can be produced, and the path to
+    it from the raw 2,903,501.82 is fully reconciled and reproducible.
+
+CONFIRMED UNSOUND
+  - Both tables fail their grain test. Neither key is unique.
+  - amount and transaction_date are not usable as numeric and date types.
+  - The join is unsafe as written and inflates results.
+  - Regional filtering is unstable and does not reconcile to the table total.
+  - Missing values are empty strings, so NULL-based quality checks report the
+    data as clean when it is not.
+
+--------------------------------------------------------------------------------
+9. ANALYTICAL INCONSISTENCIES AND REPORTING RISKS DISCOVERED
+--------------------------------------------------------------------------------
+
+  R1  Duplicate joins - CRITICAL
+      15 duplicated customer ids cause fan-out. Inner join returns 5,295 rows
+      from a 5,025-row fact table. Affected customers are disproportionately
+      high-volume, so top-N customer reports are the most distorted. The
+      duplicates are not identical - CUST-00063 appears as both Small Business
+      and Enterprise - so deduplication also silently reassigns revenue between
+      segments depending on which row survives.
+
+  R2  Inconsistent keys - HIGH
+      175 rows fail an exact join: 60 lowercase, 40 whitespace, 30 unpadded, 45
+      genuine orphans. An inner join drops all 175 without warning. The loss is
+      not random, so it skews segment and regional totals rather than reducing
+      them uniformly.
+
+  R3  Invalid aggregations - CRITICAL
+      65 unusable amounts, 30 unflagged refunds, 6 implausible outliers, 25
+      duplicated transactions. Four legitimate-looking queries produce revenue
+      figures ranging from 1,533,214.74 to 3,031,919.72 - a 98% spread. Average
+      order value is equally unstable: AVG(amount) and SUM/COUNT(*) disagree by
+      1.3% on the raw table (585.38 against 577.81) because they use different
+      denominators, and the raw figure of 585.38 overstates the cleaned 312.96
+      by 87%.
+
+  R4  Inconsistent filtering behaviour - HIGH
+      31 region literals for 5 regions. The same question returns 970 to 1,111
+      rows depending on filter construction. 410 rows fall outside every exact
+      regional filter, so regional figures cannot reconcile to the total. A
+      second, independent failure affects date filtering: 50 rows have no
+      parseable date and vanish from every time-based visual.
+
+  R5  Incomplete customer records - MEDIUM
+      15 blank names, 18 blank segments, 11 blank regions across 44 rows. Blank
+      segments produce an unlabelled category in every segment breakdown and
+      prevent segment percentages from summing to the total.
+
+  R6  Ambiguous regional definition - MEDIUM, governance not technical
+      sales_raw.region and customers.region disagree on 319 joined rows. This is
+      not corrupt data - a sale can legitimately be booked outside a customer's
+      home region - but with both columns named "region" and neither documented,
+      two analysts will filter different columns and produce different answers
+      that are each correct.
+
+THE COMMON PROPERTY
+Not one of these six failures raises an error, returns a NULL where a number is
+expected, or produces a visibly broken visual. Every one produces a plausible
+number. There is no mechanism in the current tables by which a report consumer
+could detect that a figure is wrong.
+
+--------------------------------------------------------------------------------
+10. DO THE DATASETS SUPPORT ANALYTICAL QUERIES AND REPORTING RELIABLY?
+--------------------------------------------------------------------------------
+
+STRUCTURALLY: YES.
+The schema supports the intended analytical workload. The star shape is correct,
+the grain is well defined in principle, the measure is additive, a time anchor
+exists across two complete years, and the join key is identifiable. Validation
+J5 demonstrates that a clean, non-inflating join is achievable with the columns
+present. No redesign is required.
+
+RELIABLY, IN THEIR CURRENT STATE: NO.
+
+The evidence for this conclusion is the spread, not any individual defect. The
+same table, queried four defensible ways, reports revenue between 1,533,214.74
+and 3,031,919.72. The same regional question returns four different row counts.
+Neither table satisfies its own grain. Reliability means the same question
+returns the same answer regardless of who asks it, and that condition is not met
+today.
+
+Two aggravating factors specific to this environment:
+
+  Direct Lake removes the buffer. Power BI reads the Delta files directly with
+  no import step, so a wrong value reaches every report immediately. There is no
+  refresh cycle during which an error might be caught.
+
+  Failures are silent by construction. Every defect found produces a plausible
+  number rather than an error, so the usual signal that something is wrong -
+  a report that visibly breaks - will never appear.
+
+RECOMMENDATION
+Do not expose sales_raw or customers to reporting users. Build the curated layer
+specified in Part 2, point the semantic model at it, and restrict the raw tables
+to the engineering team for lineage purposes.
+
+--------------------------------------------------------------------------------
+11. RECOMMENDED ADDITIONAL VALIDATION AND PREPARATION BEFORE PRODUCTION
+--------------------------------------------------------------------------------
+
+PREPARATION - build the curated layer
+  1.  dim_customer - normalise customer_id, collapse the 15 duplicates using a
+      documented survivorship rule, replace blanks with 'Unknown', standardise
+      and rename region to home_region.
+  2.  fact_sales - deduplicate on transaction_id, cast amount with TRY_CAST,
+      parse dates with COALESCE over both formats, standardise and rename region
+      to sale_region, and add is_orphan, is_refund and is_outlier flags so the
+      problem rows are preserved and auditable rather than deleted.
+  3.  dim_date - generated calendar covering 2024-01-01 to 2025-12-31 with
+      fiscal period, quarter, month and week attributes.
+  4.  dim_region - five canonical rows plus 'Unknown', to make regions a
+      controlled domain rather than free text.
+
+VALIDATION NOT YET PERFORMED, AND WHICH SHOULD BE BEFORE PRODUCTION
+  5.  Referential integrity after loading - assert that every fact row resolves
+      to a dimension member or is explicitly flagged as an orphan.
+  6.  Distribution and outlier testing - percentile analysis on amount to set a
+      defensible outlier threshold rather than the 40,000 cut-off used here,
+      which was chosen for the validation exercise and is not a business rule.
+  7.  Time-series continuity - check for missing days, and for volume spikes or
+      gaps indicating a partial or double-loaded extract.
+  8.  Cross-source reconciliation - agree the total revenue figure with the
+      finance system before publication. Every figure in this report is
+      internally consistent, but nothing so far confirms that 1,533,214.74 is
+      the correct answer rather than merely a defensible one. This is the most
+      important outstanding step.
+  9.  Duplicate survivorship review - confirm with the business which record
+      should win for the 15 duplicated customers, since the choice reassigns
+      revenue between segments.
+  10. Refund treatment decision - determine whether the published measure is
+      gross or net of the 30 refunds, and name the measure accordingly.
+  11. Orphan investigation - refer the 45 unmatched customer ids to the source
+      system owner. They indicate either deleted customer records or a broken
+      extract, and the cause determines whether the count will grow.
+  12. Slowly changing dimension policy - decide whether historical accuracy of
+      customer_segment matters. The current dimension holds present values only,
+      so a customer who changed segment appears always to have been in the
+      current one.
+
+CONTROLS TO INSTITUTIONALISE
+  13. Automated data quality gates in the pipeline, failing the load rather than
+      publishing when any of these break:
+        - COUNT(*) = COUNT(DISTINCT transaction_id) in fact_sales
+        - COUNT(*) = COUNT(DISTINCT customer_key) in dim_customer
+        - joined row count = fact row count (the fan-out test)
+        - orphan rate within an agreed tolerance
+        - sale_region within the controlled domain
+        - TRY_CAST failure count = 0
+  14. Row count and revenue trend monitoring across loads, so a sudden change in
+      volume or total is caught before it reaches a report.
+  15. A published data dictionary defining every column, and in particular the
+      distinction between home_region and sale_region, plus the agreed
+      definitions of revenue and average order value.
+  16. Quarantine tables under Files/rejected/ for rows failing validation, with
+      an owner responsible for reviewing them, so rejected rows are corrected
+      rather than accumulating unexamined.
+
+CLOSING NOTE
+The validation exercise achieved its purpose. Every problem was found before
+publication rather than after, each one is quantified, and the path from the raw
+tables to a defensible figure is documented and reproducible. The tables are not
+ready for reporting, but they are now fully understood - which is the actual
+deliverable of a validation phase.
+
+================================================================================

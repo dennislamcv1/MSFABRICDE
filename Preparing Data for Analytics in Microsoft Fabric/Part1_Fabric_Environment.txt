@@ -1,0 +1,306 @@
+================================================================================
+PART 1 - PREPARE THE FABRIC ANALYTICS ENVIRONMENT
+Project: Preparing an Analytics-Ready Dataset in Microsoft Fabric
+Role: Data Engineer, Retail Operations
+================================================================================
+
+NOTE ON PLACEHOLDERS
+Values shown in [square brackets] are tenant-specific and should be replaced
+with the actual values from your own Fabric environment before submission:
+[workspace name], [capacity SKU], [region], [date], [your name].
+
+--------------------------------------------------------------------------------
+1. THE FABRIC WORKSPACE
+--------------------------------------------------------------------------------
+
+Workspace name:        ws-retail-analytics
+Description:           Working area for the retail operations analytics
+                       programme. Holds the Lakehouse, ingestion artifacts and
+                       downstream reporting items for the customer and sales
+                       datasets.
+License mode:          Fabric capacity - [capacity SKU, e.g. F2 / Trial]
+Home region:           [region, e.g. Southeast Asia]
+Created on:            [date]
+Domain:                [domain, if your tenant uses domains - otherwise "none"]
+
+Why a dedicated workspace was created
+A separate workspace was provisioned rather than reusing an existing Power BI
+workspace for three reasons:
+
+  a) A Lakehouse item can only be created in a workspace backed by Fabric
+     capacity. A Pro-only workspace will not offer the Lakehouse item type.
+  b) Workspace-level isolation keeps the raw retail data, the ingestion logic
+     and the reporting layer under a single permission boundary, so access can
+     be granted to the analytics team without exposing unrelated content.
+  c) It keeps the OneLake path predictable and readable:
+     onelake://[tenant]/ws-retail-analytics/lh_retail_ops.Lakehouse/
+
+Access assigned
+  Admin        - [your name] (data engineer, owns the environment)
+  Member       - data engineering peers who need to publish and modify items
+  Contributor  - analysts who build reports on top of the curated tables
+  Viewer       - business stakeholders who consume the reports only
+
+Assigning analysts as Contributor rather than Member is deliberate: they can
+build on the tables but cannot alter the ingestion pipeline or drop tables.
+
+--------------------------------------------------------------------------------
+2. THE LAKEHOUSE ENVIRONMENT
+--------------------------------------------------------------------------------
+
+Lakehouse name:        lh_retail_ops
+Item type:             Lakehouse (Fabric Data Engineering workload)
+Storage:               OneLake - Delta Lake tables backed by Parquet files
+Schema support:        [enabled / not enabled - state which you chose]
+
+A Lakehouse was chosen over a Warehouse because the source data arrives as flat
+files of unknown quality. The Lakehouse lets the raw CSVs land in their original
+form first and be converted to tables as a separate, reversible step. A Warehouse
+would have required the data to be clean and typed before it could be loaded at
+all, which would have hidden exactly the problems this project is meant to find.
+
+What Fabric provisions automatically
+Creating the Lakehouse produced three linked items in the workspace:
+
+  1. lh_retail_ops                - the Lakehouse itself, with its Files and
+                                    Tables sections
+  2. lh_retail_ops (SQL endpoint) - a read-only SQL analytics endpoint that
+                                    exposes every Delta table for T-SQL queries
+                                    without any additional configuration
+  3. lh_retail_ops (semantic model) - a default semantic model over the tables,
+                                    available to Power BI for reporting
+
+This matters for the project because it means the same physical Delta files are
+readable three ways - Spark notebooks, T-SQL over the SQL endpoint, and DAX over
+the semantic model - with no data copied and no separate refresh to manage. The
+validation work in Part 2 can therefore be done in whichever engine is most
+convenient without moving data.
+
+The two sections of the Lakehouse
+  Files  - unmanaged storage. Anything can be dropped here in any format. Fabric
+           does not parse or track it. This is where the raw CSVs land.
+  Tables - managed storage. Every item is a Delta table with a registered
+           schema, discoverable by the SQL endpoint and the semantic model.
+
+--------------------------------------------------------------------------------
+3. IMPORTED TABLES
+--------------------------------------------------------------------------------
+
+Two tables were imported into the Tables section of lh_retail_ops.
+
+TABLE: sales_raw
+  Source file:   Files/landing/sales/sales_raw.csv
+  Row count:     5,025
+  Column count:  5
+  Format:        Delta
+
+  Column             Declared type   Type as loaded   Notes
+  -----------------  --------------  ---------------  --------------------------
+  transaction_id     STRING          STRING           Transaction identifier
+  customer_id        STRING          STRING           Foreign key to customers
+  amount             DECIMAL         STRING           Loaded as string - see below
+  transaction_date   DATE            STRING           Loaded as string - see below
+  region             STRING          STRING           Sales region
+
+TABLE: customers
+  Source file:   Files/landing/customers/customers.csv
+  Row count:     515
+  Column count:  4
+  Format:        Delta
+
+  Column             Declared type   Type as loaded   Notes
+  -----------------  --------------  ---------------  --------------------------
+  customer_id        STRING          STRING           Customer identifier
+  customer_name      STRING          STRING           Customer name
+  customer_segment   STRING          STRING           Customer category
+  region             STRING          STRING           Assigned sales region
+
+Observation recorded at import time
+Schema inference did not produce the declared types for two columns of
+sales_raw. Both amount and transaction_date were inferred as STRING rather than
+DECIMAL and DATE. This is not a loader fault - it is the loader correctly
+reporting that the column contains values it cannot parse as a single type. No
+attempt was made to override the inferred schema at this stage, because the
+inferred types are themselves a finding and forcing a cast on import would have
+silently discarded the offending rows. Investigating and resolving this is
+carried into Part 2.
+
+Row counts were also noted as import-time facts to be checked later: 515 rows in
+a customer table is an unusual number for a dimension that is supposed to carry
+one row per customer, and this was flagged for verification rather than accepted.
+
+--------------------------------------------------------------------------------
+4. HOW THE DATASETS WERE ORGANIZED INSIDE THE LAKEHOUSE
+--------------------------------------------------------------------------------
+
+Ingestion method used
+The Lakehouse upload workflow was used: upload to Files, then Load to Tables.
+This was chosen over Dataflow Gen2 and notebook ingestion because it performs no
+transformation. The data arrives in the Tables section in the same state it left
+the source system, which is a requirement for an honest assessment of data
+quality. A Dataflow would have applied Power Query type coercion during load and
+quietly resolved some of the very issues the project exists to identify.
+
+Folder structure created under Files
+
+  Files/
+    landing/                  raw source files, never modified after upload
+      customers/
+        customers.csv
+      sales/
+        sales_raw.csv
+    archive/                  dated copies of superseded loads
+    rejected/                 rows quarantined by validation (populated in Part 2)
+
+Splitting landing by subject area rather than dumping both files in one folder
+means a later incremental load can point at Files/landing/sales/ and pick up new
+transaction files without re-reading the customer file.
+
+Steps performed
+  1. In the Lakehouse explorer, created the folder structure above under Files.
+  2. Uploaded customers.csv and sales_raw.csv into their respective landing
+     subfolders using Get data > Upload files.
+  3. Previewed each file in place to confirm the header row, delimiter and
+     encoding before converting anything.
+  4. Right-clicked each file and chose Load to Tables > New table, accepting the
+     inferred schema, producing the Delta tables customers and sales_raw.
+  5. Confirmed both tables appeared under Tables and were queryable from the SQL
+     analytics endpoint.
+  6. Recorded row counts, column types and initial observations (section 3).
+
+Layering strategy
+The organization follows a medallion pattern, with only the first layer built in
+Part 1:
+
+  Bronze (built)     Files/landing/*      raw CSVs, unmodified, retained as the
+                                          reproducible source of truth
+                     Tables/customers     direct Delta conversions, no cleaning
+                     Tables/sales_raw     applied, inferred schema kept as-is
+
+  Silver (planned)   Tables/dim_customer  one row per customer, keys normalized,
+                                          duplicates collapsed
+                     Tables/fact_sales    typed measures, deduplicated on
+                                          transaction id, regions standardized,
+                                          orphan and refund rows flagged
+
+  Gold (planned)     aggregate tables and the semantic model serving reporting
+
+Keeping the raw files in Files after loading is intentional. If a cleaning rule
+in the silver layer turns out to be wrong, the bronze tables can be rebuilt from
+the landing files without going back to the source system.
+
+Naming conventions adopted
+  Bronze tables keep the source name, with _raw marking an untrusted table.
+  Silver tables use dim_ and fact_ prefixes to signal their modelling role.
+  All names are lower snake case, since Delta table names are case sensitive in
+  Spark and mixed casing causes avoidable friction.
+
+Why the other two ingestion options were not used
+  Dataflow Gen2 - the right tool when the source needs shaping on the way in, or
+    when a low-code refresh schedule is wanted. Rejected here because its
+    automatic type detection and error handling would mask source data quality.
+    It remains the better choice once the cleaning rules are agreed and need to
+    run on a schedule.
+  Notebook ingestion - the right tool when an explicit StructType must be
+    enforced, when the load is large enough to need partitioning control, or when
+    the ingestion itself must be version controlled. Rejected for the initial
+    load for the same reason: declaring types up front would have converted
+    unparseable values to null on read, destroying the evidence. Notebooks are
+    used from Part 2 onward to build the silver layer.
+
+--------------------------------------------------------------------------------
+5. TRANSACTIONAL VERSUS DESCRIPTIVE TABLES
+--------------------------------------------------------------------------------
+
+TRANSACTIONAL (FACT) TABLE: sales_raw
+
+  Evidence:
+    - Grain is one row per business event. Each row records a single sale.
+    - Carries an additive numeric measure, amount, that can meaningfully be
+      summed across any combination of other columns.
+    - Carries a date column, transaction_date, that anchors each row to a point
+      in time and enables period-over-period analysis.
+    - Holds a foreign key, customer_id, that points outward to a descriptive
+      table rather than describing anything itself.
+    - Highest row count of the two tables, and the count grows with business
+      activity rather than with the size of the customer base.
+    - Naturally append-only: past transactions are historical record and are not
+      expected to change.
+
+  In a star schema this becomes the central fact table.
+
+DESCRIPTIVE (DIMENSION) TABLE: customers
+
+  Evidence:
+    - Grain is intended to be one row per business entity, not per event.
+    - Contains no additive measures. Summing anything in this table produces a
+      meaningless number.
+    - All non-key columns are attributes that describe who a customer is:
+      customer_name, customer_segment, region.
+    - Supplies the labels that aggregations are grouped and filtered by. On its
+      own it answers no business question; it gives the fact table its meaning.
+    - Low row count relative to the fact table, changing slowly and by
+      correction rather than by business activity.
+
+  In a star schema this becomes a dimension table joined to sales_raw on
+  customer_id.
+
+RELATIONSHIP
+  customers (1) ----< sales_raw (many)
+  joined on customer_id
+
+  One customer is expected to have many transactions; one transaction belongs to
+  exactly one customer. This is the standard one-to-many fact-to-dimension
+  relationship.
+
+QUALIFICATION - customers is not yet a valid dimension
+Classifying customers as descriptive states what the table is meant to be, not
+what it currently is. A dimension table must have a unique key at its stated
+grain, and this table has 515 rows for what should be a smaller number of
+distinct customers. Until that is confirmed and resolved, joining sales_raw to
+customers on customer_id risks returning more rows than exist in the fact table
+and overstating every aggregated figure. Verifying the key is uniquely enforced
+is the first task of Part 2.
+
+AMBIGUOUS COLUMN - region appears in both tables
+region is present in sales_raw and in customers, and the two are not guaranteed
+to agree for the same customer. They are not redundant copies; they answer
+different questions:
+
+  customers.region   the customer's assigned or home region - an attribute of
+                     who the customer is
+  sales_raw.region   the region the transaction was booked in - an attribute of
+                     what happened
+
+A sale can legitimately be booked outside a customer's home region. Which one a
+report should filter on is a business decision, not a technical one, and it must
+be settled explicitly - otherwise two analysts asking "what was revenue in the
+North region" will filter different columns and produce different answers, both
+defensible. The recommendation carried into Part 2 is to keep both, rename them
+to home_region and sale_region in the curated layer so the distinction is
+visible in the column name, and treat region as a conformed dimension in its own
+right rather than as a free-text attribute of either table.
+
+--------------------------------------------------------------------------------
+SUMMARY OF PART 1
+--------------------------------------------------------------------------------
+
+  Workspace                ws-retail-analytics, on Fabric capacity
+  Lakehouse                lh_retail_ops, with SQL endpoint and semantic model
+  Ingestion method         Lakehouse upload workflow (Files > Load to Tables)
+  Tables imported          sales_raw (5,025 rows), customers (515 rows)
+  Organization             landing / archive / rejected under Files;
+                           bronze tables built, silver and gold planned
+  Fact table               sales_raw
+  Dimension table          customers
+  Open items for Part 2    amount and transaction_date did not load as numeric
+                           and date types; customers row count suggests the key
+                           is not unique; region is defined in both tables and
+                           the two definitions must be reconciled
+
+The environment is provisioned and the data is queryable. It is not yet
+analytics-ready, and Part 1 deliberately stops short of making it so - the
+issues listed above were recorded rather than corrected, so that Part 2 can
+assess them against evidence.
+
+================================================================================

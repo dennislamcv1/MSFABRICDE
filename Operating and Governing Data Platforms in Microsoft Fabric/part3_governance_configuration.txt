@@ -1,0 +1,11 @@
+Users and roles needing attention: Sarah Jacobs (Admin), Marketing Contractors (Contributor), and External Auditor (Member). The Data Engineering Team, BI Developers, and Finance Analysts have roles that match their responsibilities.
+
+Sarah Jacobs was granted Admin for a temporary migration project that finished six weeks ago, and audit logs show no administrative use since. Standing Admin rights she doesn't need breach least privilege and give a compromised account full control. Action: remove or downgrade her role and re-grant time-limited access if needed.
+
+Marketing Contractors hold Contributor through a group that still includes three inactive accounts. Inactive accounts with write access are an unmonitored route to unauthorized uploads or changes. Action: remove the inactive members, keep Contributor for active contractors who upload campaign datasets, and review membership regularly.
+
+The External Auditor has Member, which allows editing, though quarterly compliance review needs only read access. Action: change the role to Viewer.
+
+The last access review was four months ago, past the quarterly schedule, which may have let these issues persist. No malicious activity has been detected, so the risk is exposure rather than an incident. Action: complete the overdue review now.
+
+Classification: all are Security (governance) issues.

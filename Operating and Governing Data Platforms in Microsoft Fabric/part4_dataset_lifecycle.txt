@@ -1,0 +1,7 @@
+Datasets needing attention: Marketing Campaign Test and Finance Backup 2023. Both remain Active despite exceeding their 12-month inactivity thresholds: Marketing Campaign Test was last accessed 14 months ago and is due for removal, and Finance Backup 2023 was last accessed 19 months ago and is due for archiving. No legal or regulatory retention requirement is recorded for either. The other three datasets are managed appropriately: Daily Sales Metrics and Product Reference Data are in current use, and Customer Orders Archive was correctly archived.
+
+Impact: the policies are not being enforced, so obsolete data stays in active storage, adds clutter, and weakens governance. Inactive datasets account for about 18% of workspace storage, so the unnecessary storage is significant.
+
+Actions: before changing anything, confirm with the dataset owners that no operational, legal, or compliance need exists. Then archive Finance Backup 2023, which preserves access if it is needed later, and remove Marketing Campaign Test. To prevent recurrence, automate lifecycle enforcement or schedule regular inactivity reports so datasets past their threshold are flagged.
+
+Classification: both are Lifecycle issues.

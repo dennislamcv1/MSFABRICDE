@@ -1,0 +1,17 @@
+Overall operational health
+The environment is stable but showing early warning signs rather than active failure. No outages, throttling, failed report refreshes, or unauthorized activity were recorded, and Customer Ingestion and Executive Reporting Refresh run reliably. However, runtime growth, limited capacity headroom, stale access, and overdue data cleanup suggest operational discipline is lagging behind platform growth.
+
+Highest-priority findings
+1. Excess access (Security): Sarah Jacobs retains Admin six weeks after her migration project ended, three inactive contractor accounts still hold Contributor access, and the External Auditor has editing rights. These are quick to fix, leave standing exposure, and reflect an access review that is a month overdue.
+2. Sales Transformation (Performance, with Capacity impact): runtime rose from 24 to 41 minutes because of shuffle-heavy aggregation, and it runs at 02:00 when Data Engineering peaks reach 92%. Fixing it improves two areas at once.
+3. Inventory Synchronization (Performance): its 91% success rate comes from a missing-file dependency, causing avoidable failures.
+4. Dataset lifecycle (Lifecycle): Finance Backup 2023 and Marketing Campaign Test exceed their 12-month thresholds, and inactive datasets use about 18% of storage.
+
+Recommended next steps
+Performance: optimize Sales Transformation's partitioning and add a file-availability check to Inventory Synchronization. Capacity: stagger the 02:00 pipelines and set utilization alerts instead of buying capacity. Governance: downgrade Sarah Jacobs' Admin role, remove inactive contractor accounts, and move the External Auditor to Viewer. Lifecycle: confirm owners and retention needs, then archive Finance Backup 2023 and remove Marketing Campaign Test.
+
+AI validation
+Checking the AI review against the evidence prevented two poor decisions: an immediate capacity purchase despite short peaks and no throttling, and an unauthorized-access claim that monitoring did not support. It also showed that deletion was premature without a retention check, and revealed gaps such as the missed Admin account.
+
+Ongoing operations
+Regular reviews catch drift, such as runtime growth, access that outlives its purpose, and data past retention, before it becomes failure, security exposure, or wasted storage. Quarterly reviews, runtime and utilization alerts, and human validation of AI findings keep the platform reliable, secure, and well governed.

@@ -1,0 +1,7 @@
+Pipelines needing most attention: Sales Transformation and Inventory Synchronization. Customer Ingestion (99%, 6 minutes) and Executive Reporting Refresh (100%, 11 minutes) are stable; the Customer Ingestion timeouts clear on retry, so no action is needed.
+
+Sales Transformation: Runtime grew from about 24 to 41 minutes in a month, making it the longest-running pipeline, with a 94% success rate. Logs show the aggregation stage generating heavy shuffle activity, one partition processing far more data than the others, and extended final-stage tasks. This indicates data skew rather than a platform fault. Impact: a growing runtime and risk to downstream reporting. Action: review the aggregation key and partitioning, rebalance or pre-aggregate before the shuffle, and alert on runtime growth.
+
+Inventory Synchronization: Its 91% success rate is the lowest. Runs fail when the source file, which normally arrives within 20 minutes of the scheduled start, is missing. The cause is a dependency issue, not compute. Impact: avoidable failures and data up to 30 minutes stale. Action: add a file-availability check with wait-and-retry, or trigger on file arrival.
+
+Classification: both are Performance issues.

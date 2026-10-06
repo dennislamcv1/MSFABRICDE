@@ -1,0 +1,9 @@
+Data Engineering contributes most to capacity pressure: it has the highest average utilization (68%) and a 92% peak, occurring between 01:00 and 03:00 during scheduled transformation pipelines. Overall capacity exceeded 90% on four occasions; three coincided with multiple Data Engineering pipelines starting at 02:00, each lasting 12 to 18 minutes before utilization fell below 70%. Sales Transformation, which runs at 02:00 and has grown from 24 to 41 minutes, may lengthen these peaks.
+
+Other workloads are not the concern. Power BI peaks at 81% during 08:00-10:00 and does not overlap with the overnight peaks. Data Warehouse (43% average) and Data Science (19%) are low and stable.
+
+Impact: no throttling, rejected operations, failed refreshes, or delayed queries occurred, so users were unaffected. However, a 92% peak leaves little headroom, and further workload growth or longer runtimes could cause throttling. Successful completion does not prove efficient use.
+
+Actions: stagger the 02:00 pipeline start times to spread load, optimize Sales Transformation, and add utilization alerts around 85-90%. Investigate the fourth peak, whose cause the evidence does not show. Increasing capacity is not justified yet.
+
+Classification: Capacity issue.

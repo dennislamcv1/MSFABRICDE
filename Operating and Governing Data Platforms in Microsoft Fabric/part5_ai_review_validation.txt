@@ -1,0 +1,9 @@
+Supported: Observation 1 and Observation 3. Sales Transformation runtime rose from about 24 to 41 minutes with heavy shuffle activity, and the External Auditor's Member role allows editing when read-only access is enough. Observation 1 is only partly supported on downstream impact, since Executive Reporting Refresh remains 100% successful. Classifications: Performance and Security.
+
+Needs validation before action: Observation 4. Marketing Campaign Test was last accessed 14 months ago, past the 12-month removal threshold, and no retention requirement is recorded. But the lifecycle guidance calls for confirming operational, legal, or compliance needs first, so immediate deletion is premature. Classification: Lifecycle.
+
+Unsupported: Observation 2 overstates the case. Utilization exceeded 90% four times, but peaks lasted 12-18 minutes, three coincided with pipelines starting together at 02:00, there was no throttling or failed operations, and utilization returned below 70%. Schedule staggering should come before any purchase. Classification: Capacity. Observation 5 confuses risk with incident: three inactive accounts remaining in the Marketing Contractors group is a genuine access-hygiene weakness, but monitoring shows no unauthorized activity. Classification: Security.
+
+Strengthening the review: require every observation to cite metrics, assess alternatives (such as schedule changes) before recommending spend, separate confirmed incidents from risks, and cover omissions, such as Sarah Jacobs' unused Admin role, the Inventory Synchronization failures, and Finance Backup 2023.
+
+Human review remains essential because AI can overstate certainty, miss context such as legal holds or business ownership, and recommend irreversible actions like deletion or spending without accountability.
